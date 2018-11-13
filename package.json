@@ -1,0 +1,17 @@
+{
+  "name": "mafiabot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Wisp",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "token": "NDk5NjQ5NzM2NzYwODg1MjUx.Dp_YfQ.Lngw5aLcNi3Xy8Q97dX_RizBT-w",
+  "prefix": "!"
+}
