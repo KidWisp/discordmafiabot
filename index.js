@@ -57,22 +57,22 @@ client.on('message', async message  => {
     let commands = new Discord.RichEmbed()
     .setDescription("Bot Commands")
     .setColor("#15f153")
-    .addField("!create or !c", "E.G !create \"game name\", the host is able to add commands like flipless or maj or plurality, defaults to MAJ = on and flipless = off")
+    .addField("!create", "E.G !create \"game name\", the host is able to add commands like flipless or maj or plurality, defaults to MAJ = on and flipless = off")
     .addField("!add or !a", "E.G !add \"name\" or add multiple names with a space inbetween")
     .addField("!players", "lists all the current players in the game")
     .addField("!remove or !r", "E.G !remove \"name\" or remove multiple names with a space inbetween")
     .addField("!end", "Ends the game")
-    .addField("!startday or !daystart", "E.G !startday 7, starts day 1 with 7 minutes on the clock, the day phases automatically increment")
-    .addField("!startnight or !nightstart", "This command exists to reset the day phase time, you may add a number to dictate the length of the night phase, E.G. !startnight 7")
+    .addField("!startday or !daystart or !ds or !sd", "E.G !startday 7, starts day 1 with 7 minutes on the clock, the day phases automatically increment")
+    .addField("!startnight or !nightstart or !sn or !ns", "This command exists to reset the day phase time, you may add a number to dictate the length of the night phase, E.G. !startnight 7")
     .addField("!vote or !v", "E.G !vote \"name\"")
     .addField("!unvote or !uv", "E.G !unvote \"name\"")
     .addField("!votecount or !vc", "E.G !votecount posts the current votecount")
-    .addField("!alignment ", "allows host to add an alignment to a player");
+    .addField("!alignment or !aa", "allows host to add an alignment to a player");
 
     return message.channel.send(commands);
   }
 
-  if (cmd === `${prefix}create` || cmd === `${prefix}c` && message.member.roles.has("422952591060893696"))
+  if ((cmd === `${prefix}create` || cmd === `${prefix}c`) && message.member.roles.has("422952591060893696"))
   {
     if (game){
       return message.reply("There is already a game in session...")
@@ -183,7 +183,7 @@ client.on('message', async message  => {
           message.channel.send(`The command: ${cmd}, can only be used by the host`);
         }
       }
-      if (cmd === `${prefix}alignment`) {
+      if (cmd === `${prefix}alignment` || cmd === `${prefix}aa`) {
         if (isHost())
         {
           for (var k = 0; k < args.length - 1; k++) {
@@ -204,7 +204,7 @@ client.on('message', async message  => {
           }
         }
       }
-      if (cmd === `${prefix}startday` || cmd === `${prefix}daystart`) {
+      if (cmd === `${prefix}startday` || cmd === `${prefix}daystart` || cmd === `${prefix}ds` || cmd === `${prefix}sd`) {
         let length = true;
         let ishost = true;
         let daycheck = true;
@@ -213,13 +213,7 @@ client.on('message', async message  => {
           if (!isNaN(args[0]))
           {
             if (!checkState()) {
-              message.channel.send("The game is now over, mafia has overrun town");
-
-              message.channel.send("Setup: ");
-              for (let k = 0; k < playerList.length; k++) {
-                message.channel.send(`${playerList[k].name}: ${playerList[k].alignment}`);
-              }
-              message.channel.send("Please properly end the game by typing !end");
+              end();
             }
             else {
               for (var i = 0; i < playerList.length; i++)
@@ -324,7 +318,7 @@ client.on('message', async message  => {
       }
 
 
-      if (cmd === `${prefix}startnight` || cmd === `${prefix}nightstart`) {
+      if (cmd === `${prefix}startnight` || cmd === `${prefix}nightstart`|| cmd === `${prefix}ns` || cmd === `${prefix}sn`) {
         if (isHost()) {
           if (!isNaN(args[0])) {
             day++;
@@ -474,6 +468,27 @@ client.on('message', async message  => {
     }
   }
 
+  function end() {
+        game = false;
+        gameSize = 0;
+        gameName = "";
+        gameOwner = "";
+        isDay = false;
+        isNight = false;
+        day = 1;
+        night = 0;
+        isMaj = 0;
+        isFlipless = 0;
+
+        message.channel.send("The game is now over, mafia has overrun town");
+
+        message.channel.send("Setup: ");
+        for (let k = 0; k < playerList.length; k++) {
+          message.channel.send(`${playerList[k].name}: ${playerList[k].alignment}`);
+        }
+
+        playerList = [];
+  }
   function setHighestVote()
   {
     var temp = playerList.slice(0);
