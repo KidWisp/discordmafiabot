@@ -175,7 +175,7 @@ client.on('message', async message  => {
 
       if (cmd === `${prefix}remove` || cmd === `${prefix}r`) {
         if (isHost() || message.member.displayName == client.user.username) {
-          if (isPlayer(args[0]) || message.member.displayName == client.user.username) {
+          if (isPlayer(args[0])) {
             remove();
           }
         }
@@ -186,16 +186,19 @@ client.on('message', async message  => {
       if (cmd === `${prefix}alignment`) {
         if (isHost())
         {
-          if (isPlayer(args[0]) && (args[1] == 'mafia' || args[1] == 'town' || args[1] == 'tpr'))
-          {
-            let temp = findPlayer(args[0]);
-
-            for (var i = 0; i < playerList.length; i++)
+          for (var k = 0; k < args.length - 1; k++) {
+            if (isPlayer(args[k]) && (args[args.length - 1] == 'mafia' || args[args.length - 1] == 'town' || args[args.length - 1] == 'tpr'))
             {
-              if (playerList[i].name == temp.name)
+
+              let temp = findPlayer(args[k]);
+
+              for (var i = 0; i < playerList.length; i++)
               {
-                playerList[i].alignment = args[1];
-                console.log(playerList[i].alignment);
+                if (playerList[i].name == temp.name)
+                {
+                  playerList[i].alignment = args[args.length - 1];
+                  message.channel.send(`${playerList[i].name}: was successfully given the alignment, ${playerList[i].alignment}`);
+                }
               }
             }
           }
@@ -206,86 +209,95 @@ client.on('message', async message  => {
         let ishost = true;
         let daycheck = true;
 
-        if ((ishost = isHost()) && (length = playerList.length >= 3) && (daycheck = !isDay)) {
+        if ((ishost = isHost()) && (length = playerList.length >= 3) && (daycheck = !isDay) && checkAlignments()) {
           if (!isNaN(args[0]))
           {
-            for (var i = 0; i < playerList.length; i++)
-            {
-              playerList[i].isVoting = false;
-              playerList[i].numVotes = 0;
-              playerList[i].curVote = " ";
-            }
+            if (!checkState()) {
+              message.channel.send("The game is now over, mafia has overrun town");
 
-            playerList.push({name: "nolynch",
+              message.channel.send("Setup: ");
+              for (let k = 0; k < playerList.length; k++) {
+                message.channel.send(`${playerList[k].name}: ${playerList[k].alignment}`);
+              }
+              message.channel.send("Please properly end the game by typing !end");
+            }
+            else {
+              for (var i = 0; i < playerList.length; i++)
+              {
+                playerList[i].isVoting = false;
+                playerList[i].numVotes = 0;
+                playerList[i].curVote = " ";
+              }
+
+                playerList.push({name: "nolynch",
                              curVote: " ",
                              votedBy: [],
                              numVotes: 0,
                              isVoting: false});
-            isDay = true;
-            isNight = false;
-            let dayend = new Date().getTime() + (args[0]*60*1000);
+                isDay = true;
+                isNight = false;
+                let dayend = new Date().getTime() + (args[0]*60*1000);
 
-            let timeLeft = setInterval(function () {
-              let now = new Date().getTime();
-              let distance = dayend - now;
+                let timeLeft = setInterval(function () {
+                let now = new Date().getTime();
+                let distance = dayend - now;
 
-              let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-              let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-              let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-              let milliseconds = Math.floor((distance / 1000));
+                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                let milliseconds = Math.floor((distance / 1000));
 
-              let timer = fixtime(hours,minutes,seconds);
-
-
-                if (majority == highestVote.numVotes && isMaj)
-                {
-                  isDay = false;
-                  clearInterval(timeLeft);
-                  message.channel.send(`Day ${day} is over, majority has been reached...`);
-                  message.channel.send(`Final Vote Count: `);
-                  getVoteCount();
-                  if (!isFlipless) {
-                    message.channel.send(`${highestVote.name} has been lynched, he was ${highestVote.alignment}`);
-                    message.channel.send(`!remove ${highestVote.name}`);
-                  }
-                  else {
-                    message.channel.send(`${highestVote.name} has been lynched`);
-                    message.channel.send("!remove");
-                  }
-
-                }
+                let timer = fixtime(hours,minutes,seconds);
 
 
-              if (distance < 0 || !isDay ) {
-                clearInterval(timeLeft);
-                if (distance < 0)
-                {
+                  if (majority == highestVote.numVotes && isMaj)
+                  {
                     isDay = false;
-                    message.channel.send(`Day ${day} is over...`);
+                    clearInterval(timeLeft);
+                    message.channel.send(`Day ${day} is over, majority has been reached...`);
                     message.channel.send(`Final Vote Count: `);
                     getVoteCount();
                     if (!isFlipless) {
-                      message.channel.send(`\`\`\`${highestVote.name} has been lynched, he was ${highestVote.alignment}\`\`\``);
+                      message.channel.send(`${highestVote.name} has been lynched, he was ${highestVote.alignment}`);
                     }
                     else {
-                      message.channel.send(`\`\`\`${highestVote.name} has been lynched\`\`\``);
+                      message.channel.send(`${highestVote.name} has been lynched`);
                     }
+
+                  }
+
+
+                if (distance < 0 || !isDay ) {
+                  clearInterval(timeLeft);
+                  if (distance < 0)
+                  {
+                      isDay = false;
+                      message.channel.send(`Day ${day} is over...`);
+                      message.channel.send(`Final Vote Count: `);
+                      getVoteCount();
+                      if (!isFlipless) {
+                        message.channel.send(`\`\`\`${highestVote.name} has been lynched, he was ${highestVote.alignment}\`\`\``);
+                      }
+                      else {
+                        message.channel.send(`\`\`\`${highestVote.name} has been lynched\`\`\``);
+                      }
+                  }
                 }
+
+
+              }, 1000);
+              let mes = "";
+              mes += `\`\`\`Day ${day} has started...\n`;
+              mes += `${players()}\n`;
+              if (isMaj) {
+                mes += `It takes ${majority} to lynch...\n`;
               }
+              mes += `${args[0]} minutes remaining...\`\`\``;
 
+              message.channel.send(mes);
 
-            }, 1000);
-            let mes = "";
-            mes += `\`\`\`Day ${day} has started...\n`;
-            mes += `${players()}\n`;
-            if (isMaj) {
-              mes += `It takes ${majority} to lynch...\n`;
             }
-            mes += `${args[0]} minutes remaining...\`\`\``;
-
-            message.channel.send(mes);
-
           }
           else {
               message.channel.send(`Invalid day length was entered!`);
@@ -301,7 +313,11 @@ client.on('message', async message  => {
           }
 
           if (!daycheck) {
-            message.channel.send(`The day phase is already ongoing...`)
+            message.channel.send(`The day phase is already ongoing...`);
+          }
+
+          if (!checkAlignments()) {
+            message.channel.send(`Please make sure all players have alignments before starting the day phase`);
           }
         }
 
@@ -524,6 +540,25 @@ client.on('message', async message  => {
     return isPlayer;
   }
 
+  function checkAlignment()
+  {
+
+  }
+
+  function checkAlignments()
+  {
+    let check = 1;
+    for (let i = 0; i < playerList.length; i++)
+    {
+      if (playerList[i].alignment == " ")
+      {
+        check = 0
+      }
+    }
+    console.log(check);
+    return check;
+  }
+
   function isHost() {
     if (message.member.displayName == gameHost) {
       return true;
@@ -550,6 +585,29 @@ client.on('message', async message  => {
     return arr;
   }
 
+  function checkState()
+  {
+    let mafia = 0;
+    let town = 0;
+    for (let i = 0; i < playerList.length; i++)
+    {
+      if (playerList[i].alignment == "mafia")
+      {
+        mafia++;
+      }
+      else if (playerList[i].alignment == "town"){
+        town++;
+      }
+    }
+
+    if  (mafia >= town)
+    {
+      return 0;
+    }
+    else {
+      return 1;
+    }
+  }
   function clear () {
     for (var i = 0; i < playerList.length; i++)
     {
